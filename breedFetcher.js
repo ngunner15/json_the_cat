@@ -1,18 +1,22 @@
 const request = require('request');
-const args = process.argv.slice(2);
 
-const breedCatcher = function(breed) {
-  request('https://api.thecatapi.com/v1/breeds/search?q=sib', (error, response, body) => {
-    if (error) {
-      console.log("Error is: ", error);
-    }
+const fetchBreedDescription = function(breedName, callback) {
+  let errorCb = null;
+  let descriptionCb = null;
+  request('https://api.thecatapi.com/v1/breeds/search?q=sib',(error, response, body) => {
     const data = JSON.parse(body);
-    if (breed === data[0].name) {
-      console.log(data[0].description);
+
+    if (error) {
+      errorCb = error;
+      callback(errorCb, descriptionCb);
+    } else if (breedName !== data[0].name) {
+      errorCb = "Information about that particular breed is not here."
+      callback(errorCb, descriptionCb);
     } else {
-      console.log("We dont have information regarding that breed of cat...");
+      descriptionCb = data[0].description;
+      callback(errorCb, descriptionCb);
     }
   });
 };
 
-breedCatcher(args[0]);
+module.exports = { fetchBreedDescription };
